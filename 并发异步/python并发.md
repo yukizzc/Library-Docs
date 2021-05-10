@@ -1,6 +1,8 @@
-# 并发介绍
+# 总览
 
-## 总览
+## 概要
+
+参考地址[GitHub - peiss/ant-learn-python-concurrent: Python并发编程专题](https://github.com/peiss/ant-learn-python-concurrent)
 
 - 多线程：threading，利用CPU和IO可以同时执行的原理，让CPU不会干巴巴等待IO完成
 
@@ -191,5 +193,40 @@ if __name__ =='__main__':
         multiprocessing.current_process().name)
         )
     main()
+```
+
+# 协程
+
+## 事件循环
+
+```python
+import asyncio
+# 生成一个事件循环，好比while True        
+loop = asyncio.get_event_loop()
+# 将任务放到任务列表
+loop.run_until_complete(任务)
+```
+
+## 案例
+
+```python
+import asyncio
+async def func():
+    print(1)
+    await asyncio.sleep(5)
+    print(3)
+    return '返回值'
+async def main():
+    print('main开始')
+    # 创建task对象，把任务添加到事件循环
+    task_list = [
+        asyncio.create_task(func(),name='yan1'),
+        asyncio.create_task(func(),name='yan2')
+    ]
+    print('main结束')
+
+    done,pending = await asyncio.wait(task_list)
+    print(done)
+asyncio.run(main())
 ```
 

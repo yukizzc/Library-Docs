@@ -197,36 +197,108 @@ if __name__ =='__main__':
 
 # 协程
 
+## 定义协程函数
+
+协程函数：定义函数时候async def 函数名
+
+协程对象：协程函数（）返回的对象
+
+```python
+async def fun():
+    pass
+result = func()
+```
+
+<font color='red'>注意：这里函数不会执行，要执行协程函数内代码，必须要将协程对象交给事件循环来处理。</font>
+
 ## 事件循环
 
 ```python
 import asyncio
-# 生成一个事件循环，好比while True        
-loop = asyncio.get_event_loop()
-# 将任务放到任务列表
-loop.run_until_complete(任务)
+async def fun():
+    print('jugeng')
+result = fun()
+# 生成一个事件循环，好比while True
+# loop = asyncio.get_event_loop()
+# loop.run_until_complete(result)
+# python 3.7 以后可以用这种方法代替上面得
+asyncio.run(result)
 ```
 
-## 案例
+## await
+
+await + 可等待得对象（协程对象，future对象，task对象 --> IO等待）
+
+await就是等待对象的计算结果后再执行下去。
+
+案例1：
 
 ```python
 import asyncio
-async def func():
-    print(1)
+async def fun():
+    print('come')
+    response = await asyncio.sleep(2)
+    print('over')
+asyncio.run(fun())
+```
+
+案例2：
+
+```python
+import asyncio
+async def others():
+    print('start')
     await asyncio.sleep(5)
-    print(3)
+    print('end')
     return '返回值'
+async def func():
+    print('执行协程内部代码')
+    response = await others()
+    print('IO请求结束，结果为', response)
+asyncio.run(func())
+```
+
+案例3：
+
+```python
+import asyncio
+import time
+async def others(x):
+    print(str(x)+'start')
+    await asyncio.sleep(5)
+    print(str(x)+'end')
+    return str(x)+'的返回值'
+async def func():
+    print('执行协程内部代码')
+    # await等执行结束了，执行后面程序
+    response1 = await others(1)
+    print('IO请求结束，结果为', response1)
+    response2 = await others(2)
+    print('IO请求结束，结果为', response2)
+asyncio.run(func())
+```
+
+## Task对象
+
+```python
+import asyncio
+async def func(x):
+    print(x)
+    await asyncio.sleep(5)
+    print(x)
+    return str(x)+'返回值'
 async def main():
     print('main开始')
     # 创建task对象，把任务添加到事件循环
     task_list = [
-        asyncio.create_task(func(),name='yan1'),
-        asyncio.create_task(func(),name='yan2')
+        asyncio.create_task(func(1),name='guoli'),
+        asyncio.create_task(func(2),name='ft')
     ]
-    print('main结束')
-
     done,pending = await asyncio.wait(task_list)
     print(done)
+    print('-------------------------------')
+    print(pending)
+    print('main结束')
 asyncio.run(main())
 ```
 

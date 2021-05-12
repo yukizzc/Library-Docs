@@ -204,16 +204,6 @@ if __name__ =='__main__':
 协程对象：协程函数（）返回的对象
 
 ```python
-async def fun():
-    pass
-result = func()
-```
-
-<font color='red'>注意：这里函数不会执行，要执行协程函数内代码，必须要将协程对象交给事件循环来处理。</font>
-
-## 事件循环
-
-```python
 import asyncio
 async def fun():
     print('jugeng')
@@ -222,43 +212,58 @@ result = fun()
 # loop = asyncio.get_event_loop()
 # loop.run_until_complete(result)
 # python 3.7 以后可以用这种方法代替上面得
+# 用asyncio.run来运行协程
 asyncio.run(result)
+```
+
+## 并发运行多个协程
+
+main()是普通运行协程函数，执行的时候会依次执行
+
+main2()通过creat_task创建并发的协程
+
+```python
+import asyncio
+import time
+
+async def say_after(delay, what):
+    print(what+'__'+f"started at {time.strftime('%X')}")
+    await asyncio.sleep(delay)
+    print(what+'__'+f"finished at {time.strftime('%X')}")
+    
+async def main():
+    await say_after(5, 'hello')
+    await say_after(2, 'world')
+
+async def main2():
+    task1 = asyncio.create_task(say_after(5, 'hello'))
+    task2 = asyncio.create_task(say_after(2, 'world'))
+    await task1
+    await task2
+print('第一种')
+asyncio.run(main())
+print('第二种')
+asyncio.run(main2())
+```
+输出的结果如下，可以看到第一种是依次执行hello然后是world。第二种方式hello和world是同时执行了
+```tex
+第一种
+hello__started at 16:08:41
+hello__finished at 16:08:46
+world__started at 16:08:46
+world__finished at 16:08:48
+第二种
+hello__started at 16:08:48
+world__started at 16:08:48
+world__finished at 16:08:50
+hello__finished at 16:08:53
 ```
 
 ## await
 
 await + 可等待得对象（协程对象，future对象，task对象 --> IO等待）
 
-await就是等待对象的计算结果后再执行下去。
-
-案例1：
-
-```python
-import asyncio
-async def fun():
-    print('come')
-    response = await asyncio.sleep(2)
-    print('over')
-asyncio.run(fun())
-```
-
-案例2：
-
-```python
-import asyncio
-async def others():
-    print('start')
-    await asyncio.sleep(5)
-    print('end')
-    return '返回值'
-async def func():
-    print('执行协程内部代码')
-    response = await others()
-    print('IO请求结束，结果为', response)
-asyncio.run(func())
-```
-
-案例3：
+协程遇到await，事件循环将会挂起该协程，执行别的协程，直到其他的协程也挂起或者执行完毕，再进行下一个协程的执行，协程的目的也是让一些耗时的操作异步化。
 
 ```python
 import asyncio
@@ -280,25 +285,40 @@ asyncio.run(func())
 
 ## Task对象
 
+Task对象是指：与任务调度，和并发有关，是指帮助在事件循环中并发的向任务列表，添加多个任务。task用于并发调度协程，通过asyncio.create_task(协程对象)的方式创建Task对象，这样可以让协程加入事件循环中等待被调度执行
+
 ```python
 import asyncio
+import datetime
 async def func(x):
-    print(x)
+    start_ti = datetime.datetime.today()
+    print(x,start_ti)
     await asyncio.sleep(5)
-    print(x)
+    print(x,datetime.datetime.today()-start_ti)
     return str(x)+'返回值'
 async def main():
     print('main开始')
     # 创建task对象，把任务添加到事件循环
-    task_list = [
-        asyncio.create_task(func(1),name='guoli'),
-        asyncio.create_task(func(2),name='ft')
-    ]
-    done,pending = await asyncio.wait(task_list)
-    print(done)
-    print('-------------------------------')
-    print(pending)
+    task1 = asyncio.create_task(func(1),name='guoli')
+    task2 = asyncio.create_task(func(2),name='ft')
     print('main结束')
+    res1 = await task1
+    res2 = await task2
+    print(res1)
+    print(res2)
 asyncio.run(main())
+```
+
+输出结果，可以看到1和2的任务同时开启了
+
+```txt
+main开始
+main结束
+1 2021-05-12 16:27:20.670393
+2 2021-05-12 16:27:20.670393
+1 0:00:05.012028
+2 0:00:05.012028
+1返回值
+2返回值
 ```
 

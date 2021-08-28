@@ -173,6 +173,15 @@ del data2['index']
 data.drop(['height','weight'],axis=1,inplace=True) 
 ```
 
+```python
+# 把字符串转换成日期格式，日期可以进行排序
+df = pd.DataFrame([['2019-05-30',1],['2020-06-30',2],['2018-06-30',2]],columns=['date','num'])
+df['date_str'] = pd.to_datetime(df['date'])
+df.sort_values(by='date_str')
+```
+
+
+
 # map方法
 
 

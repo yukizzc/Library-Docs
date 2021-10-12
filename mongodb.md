@@ -68,6 +68,8 @@ myquery = { "name": "liu" }
 mydoc = mycol.find(myquery)
 for x in mydoc:
     print(x)
+# 查询符合指定条件数目
+num = mycol.count_documents(myquery)
 ```
 
 ## 修改数据

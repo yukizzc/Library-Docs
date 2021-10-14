@@ -131,6 +131,13 @@ data['color'].unique()
 
 # 方法
 
+```python
+#删除指定字段里有None的行
+df.dropna(subset=['sales_depart_name'],inplace=True)
+#某个字段里包含某个字符的筛选数据
+df[df.sales_depart_name.str.contains('包含的字符')]
+```
+
 
 ```python
 #根据布尔值筛选数据

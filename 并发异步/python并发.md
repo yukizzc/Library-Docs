@@ -60,6 +60,130 @@ print('主线程%s,线程名%s'%(threading.current_thread(),threading.current_th
 
  Join方法：如果一个线程在执行过程中要调用另外一个线程，并且等到其完成以后才能接着执行那么在调用这个线程时可以使用join方法。主线程挨个调用子线程的 join()方法，当所调用子线程都执行完毕后主线程才会执行下面的代码
 
+## 线程详解
+
+### 默认多线程
+
+```python
+import threading
+import time
+
+def run():
+    time.sleep(2)
+    print('当前线程的名字是： ', threading.current_thread().name)
+    time.sleep(2)
+
+
+if __name__ == '__main__':
+
+    start_time = time.time()
+
+    print('这是主线程：', threading.current_thread().name)
+    thread_list = []
+    for i in range(5):
+        t = threading.Thread(target=run)
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.start()
+
+    print('主线程结束！' , threading.current_thread().name)
+    print('一共用时：', time.time()-start_time)
+```
+
+这是主线程： MainThread
+主线程结束！ MainThread        
+一共用时： 0.002965688705444336
+当前线程的名字是：  Thread-3
+当前线程的名字是：  Thread-5
+当前线程的名字是：  Thread-2
+当前线程的名字是：  Thread-1
+当前线程的名字是：  Thread-4
+
+当一个进程启动之后，会默认产生一个主线程，因为线程是程序执行流的最小单元，当设置多线程时，主线程会创建多个子线程，在python中，默认情况下（其实就是setDaemon(False)），主线程执行完自己的任务以后，就退出了，此时子线程会继续执行自己的任务，直到自己的任务结束
+
+### 设置守护线程
+
+```python
+import threading
+import time
+
+def run():
+
+    time.sleep(2)
+    print('当前线程的名字是:', threading.current_thread().name)
+    time.sleep(2)
+
+
+if __name__ == '__main__':
+
+    start_time = time.time()
+
+    print('这是主线程:', threading.current_thread().name)
+    thread_list = []
+    for i in range(5):
+        t = threading.Thread(target=run)
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.setDaemon(True)
+        t.start()
+
+    print('主线程结束了!' , threading.current_thread().name)
+    print('一共用时:', time.time()-start_time)
+```
+
+这是主线程: MainThread
+主线程结束了! MainThread      
+一共用时: 0.000972747802734375
+
+当我们使用setDaemon(True)方法，设置子线程为守护线程时，主线程一旦执行结束，则全部线程全部被终止执行，可能出现的情况就是，子线程的任务还没有完全执行结束，就被迫停止
+
+### join的作用
+
+```python
+import threading
+import time
+
+def run():
+
+    time.sleep(2)
+    print('当前线程的名字是: ', threading.current_thread().name)
+    time.sleep(2)
+
+
+if __name__ == '__main__':
+
+    start_time = time.time()
+
+    print('这是主线程:', threading.current_thread().name)
+    thread_list = []
+    for i in range(5):
+        t = threading.Thread(target=run)
+        thread_list.append(t)
+
+    for t in thread_list:
+        t.setDaemon(True)
+        t.start()
+
+    for t in thread_list:
+        t.join()
+
+    print('主线程结束了!' , threading.current_thread().name)
+    print('一共用时:', time.time()-start_time)
+```
+
+这是主线程: MainThread
+当前线程的名字是:  Thread-5
+当前线程的名字是:  Thread-1
+当前线程的名字是:  Thread-4
+当前线程的名字是:  Thread-2
+当前线程的名字是:  Thread-3
+主线程结束了! MainThread
+一共用时: 4.0111846923828125
+
+join的作用就凸显出来了，join所完成的工作就是线程同步，即主线程任务结束之后，进入阻塞状态，一直等待其他的子线程执行结束之后，主线程在终止
+
 ## 生产消费者模式
 
 在多线程开发当中，如果生产线程处理速度很快，而消费线程处理速度很慢，那么生产线程就必须等待消费线程处理完，才能继续生产数据。同样的道理，如果消费线程的处理能力大于生产线程，那么消费线程就必须等待生产线程。为了解决这个问题于是引入了生产者和消费者模式
@@ -149,12 +273,15 @@ input_task = [10, 20, 30]
 # 准备函数
 def my_func(x):
     print('子线程%s,线程名%s'%(threading.current_thread(),threading.current_thread().name))
-    print(x)
+    # print(x)
     time.sleep(1)
-
+    return x
 def multi_thread():
     with ThreadPoolExecutor() as pool:
-        pool.map(my_func, input_task)
+        results = pool.map(my_func, input_task)
+    # 线程池可以有 返回值
+    for out in results:
+        print(out)
 multi_thread()
 print('主线程%s,线程名%s'%(threading.current_thread(),threading.current_thread().name))
 ```

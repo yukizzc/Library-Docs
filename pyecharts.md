@@ -211,6 +211,8 @@ bar.render("overlap_bar_line.html")
 
 相当于主图表比如上面bar的yaxis_index是0使用默认y轴，新加一个坐标轴就和yaxis_index=1的绑定，再增加的话就和index=2的绑定
 
+
+
 ## 顺序多图Page
 
 ```python
@@ -545,4 +547,40 @@ if __name__ == '__main__':
 ```
 
 
+
+# 案例
+
+## bar叠加两条line图
+
+```python
+from pyecharts import options as opts
+from pyecharts.charts import Bar, Grid, Line
+from pyecharts import faker
+
+code = faker.Faker.country
+# 创建bar图表
+bar = Bar(init_opts=opts.InitOpts())
+bar.add_xaxis(code)
+# 添加数据，设置bar的标签、数据、yaxis_index、label_opts是否显示、bar柱体颜色,这里颜色最后一个参数是alpha透明度
+bar.add_yaxis('保证金', faker.Faker.values(10, 200), yaxis_index=0, label_opts=opts.LabelOpts(is_show=True), color='rgba(132, 100, 211, 0.5)')
+# 全局设置，x轴上数据的角度、颜色，title显示内容
+bar.set_global_opts(xaxis_opts=opts.AxisOpts(axislabel_opts={"rotate": 60, 'color': 'blue'}),title_opts=opts.TitleOpts(title='柱状净持仓', subtitle="线图保证金"))
+# 全局设置，y轴显示名称、位置、轴线的style(颜色)、坐标轴显示单位
+bar.set_global_opts(yaxis_opts=opts.AxisOpts(name="保证金", position="left",axisline_opts=opts.AxisLineOpts(linestyle_opts=opts.LineStyleOpts(color="#675bba")),axislabel_opts=opts.LabelOpts(formatter="{value} 万"),splitline_opts=opts.SplitLineOpts(is_show=True, linestyle_opts=opts.LineStyleOpts(opacity=1))))
+# 全局设置，增加一个十字光标提示
+bar.set_global_opts(tooltip_opts=opts.TooltipOpts(trigger="axis", axis_pointer_type="shadow"))
+# 增加一个坐标轴，设置好y轴显示名称等的功能,设置min和max最大范围一致可以让坐标轴0在0轴上
+bar.extend_axis(yaxis=opts.AxisOpts(name="第一个轴",min_=-1000,max_=1000, type_="value",position="right",axisline_opts=opts.AxisLineOpts(is_on_zero=True,linestyle_opts=opts.LineStyleOpts(color="#3979b3"))))
+# 再增加一个坐标轴，设置好y轴显示名称等的功能，offset用来表示偏移多少
+bar.extend_axis(yaxis=opts.AxisOpts(offset=50, name="第二个轴", type_="value", position="right",
+axisline_opts=opts.AxisLineOpts(is_on_zero=True,linestyle_opts=opts.LineStyleOpts(color="#3979b3"))))
+line = Line()
+line.add_xaxis(code)
+# yaxis_index用来和上面增加的坐标轴对应上，通过让1和2对换看效果
+line.add_yaxis('第一个轴', faker.Faker.values(10, 200), yaxis_index=1)
+line.add_yaxis('第二个轴', faker.Faker.values(10, 200), yaxis_index=2)
+c = bar.overlap(line)
+c.render()
+
+```
 

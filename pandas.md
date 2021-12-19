@@ -138,6 +138,10 @@ df.dropna(subset=['sales_depart_name'],inplace=True)
 df[df.sales_depart_name.str.contains('包含的字符')]
 ```
 
+```python
+#筛选某列数值属于某个列表范围内
+data[data['color'].isin(['yellow','white'])]
+```
 
 ```python
 #根据布尔值筛选数据

@@ -546,11 +546,37 @@ if __name__ == '__main__':
     app.run()
 ```
 
+## 打开多个网页方法
 
+grid叠加图片很难控制位置，多于2个图总会重叠一起，page方法又不能输出给js所以试着输出多个地址方法如下：
+
+1、多建立一个index2.html文件，修改里面地址或者端口改改都行
+
+```html
+url: "http://127.0.0.1:8001/barChart",
+```
+
+2、python的代码也新建一个，修改里面的app.run()
+
+```python
+@app.route("/", methods=["GET"])
+async def index(request):
+    # 指向刚才修改的html
+    return html(open("./templates/index2.html").read())
+
+
+if __name__ == '__main__':
+    # 设置端口,如果改地址的话就要写host='127.0.0.2'这种，和上面html对应
+    app.run(port=8001)
+```
+
+3、两个python程序要分别启动，然后打开各自的网页即可
 
 # 案例
 
 ## bar叠加两条line图
+
+<font color='red'>实际用的时候不要一个对象多次set_global_opts，特别多图grid时候，因为设置属性时候会有默认参数，默认参数可能会覆盖我们前面设置好的属性，下面例子只是为了介绍各个属性方便所以分开了</font>
 
 ```python
 from pyecharts import options as opts

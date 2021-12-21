@@ -572,6 +572,75 @@ if __name__ == '__main__':
 
 3、两个python程序要分别启动，然后打开各自的网页即可
 
+## 一个网页接收多个图表数据方法
+
+1、修改index里面内容，增加一个div模块，注意修改里面id="bar"、function fetchData()、
+
+url: "http://127.0.0.1:8000/barChart"、var chart = echarts.init(document.getElementById('bar')。
+
+保持每个模块里名字不一样，最后图像展示按照div从上到下的顺序展示图像
+
+每个模块可以改style表示显示图大小
+
+```html
+ <div id="bar" style="width:1200px; height:400px;"></div>
+    <script>
+        var chart = echarts.init(document.getElementById('bar'), 'white', {renderer: 'canvas'});
+
+        $(
+            function () {
+                fetchData();
+                setInterval(fetchData, 2000);
+            }
+        );
+
+        function fetchData() {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:8000/barChart",
+                dataType: "json",
+                success: function (result) {
+                    chart.setOption(JSON.parse(result));
+                }
+            });
+        }
+    </script>
+
+    <div id="bar2" style="width:1200px; height:400px;"></div>
+    <script>
+        var chart2 = echarts.init(document.getElementById('bar2'), 'white', {renderer: 'canvas'});
+
+        $(
+            function () {
+                fetchData2();
+                setInterval(fetchData2, 2000);
+            }
+        );
+
+        function fetchData2() {
+            $.ajax({
+                type: "GET",
+                url: "http://127.0.0.1:8000/barChart2",
+                dataType: "json",
+                success: function (result) {
+                    chart2.setOption(JSON.parse(result));
+                }
+            });
+        }
+    </script>
+```
+
+2、修改python代码，增加函数然后修改barChart2和上面index里面的对应上就行了
+
+```python
+@app.route("/barChart2", methods=["GET"])
+async def update_line_data2(request):
+    bar = Bar()
+    return json(bar.dump_options_with_quotes())
+```
+
+
+
 # 案例
 
 ## bar叠加两条line图

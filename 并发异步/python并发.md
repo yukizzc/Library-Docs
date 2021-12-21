@@ -44,9 +44,11 @@ IO密集型指的是系统运作大部分的状况是CPU在等I/O (硬盘/内存
 ## 创建多线程
 
 ```python
+import time
 # 准备函数
 def my_func(a,b):
     print(a,b)
+    time.sleep(2)
     print('子线程%s,线程名%s'%(threading.current_thread(),threading.current_thread().name))
 # 创建一个线程
 import threading
@@ -58,11 +60,25 @@ t.join()
 print('主线程%s,线程名%s'%(threading.current_thread(),threading.current_thread().name))
 ```
 
- Join方法：如果一个线程在执行过程中要调用另外一个线程，并且等到其完成以后才能接着执行那么在调用这个线程时可以使用join方法。主线程挨个调用子线程的 join()方法，当所调用子线程都执行完毕后主线程才会执行下面的代码
+ 输出：
+
+10 20
+子线程<Thread(Thread-1, started 3964)>,线程名Thread-1
+主线程<_MainThread(MainThread, started 9588)>,线程名MainThread
+
+不加join后的输出：
+
+10主线程<_MainThread(MainThread, started 6444)>,线程名MainThread 20
+
+子线程<Thread(Thread-1, started 6892)>,线程名Thread-1
+
+- start()：创建线程后通过start启动线程，等待CPU调度。
+- join([timeout])：阻塞挂起调用该函数的线程，直到被调用线程执行完成或超时。通常会在主线程中调用该方法，等待其他线程执行完成。
+- daemon、isDaemon()&setDaemon()：守护线程相关。
 
 ## 线程详解
 
-### 默认多线程
+### 添加多个多线程
 
 ```python
 import threading
@@ -184,10 +200,7 @@ if __name__ == '__main__':
 
 join的作用就凸显出来了，join所完成的工作就是线程同步，即主线程任务结束之后，进入阻塞状态，一直等待其他的子线程执行结束之后，主线程在终止
 
-## 生产消费者模式
-
-在多线程开发当中，如果生产线程处理速度很快，而消费线程处理速度很慢，那么生产线程就必须等待消费线程处理完，才能继续生产数据。同样的道理，如果消费线程的处理能力大于生产线程，那么消费线程就必须等待生产线程。为了解决这个问题于是引入了生产者和消费者模式
-生产者消费者模式是通过一个容器来解决生产者和消费者的强耦合问题。生产者和消费者彼此之间不直接通讯，而通过阻塞队列来进行通讯，所以生产者生产完数据之后不用等待消费者处理，直接扔给阻塞队列，消费者不找生产者要数据，而是直接从阻塞队列里取，阻塞队列就相当于一个缓冲区，平衡了生产者和消费者的处理能力。
+## 队列Queue
 
 ```python
 import queue
@@ -214,6 +227,46 @@ print('队列已满%s,队列长度为%s'%(q.full(),q.qsize()))
 for j in range(q.qsize()):
     print('队列中第一个数为%s,队列长度为%s'%(q.get(),q.qsize()))
 ```
+
+生产者和消费者模式
+
+生产者模块儿负责产生数据，放入缓冲区，这些数据由另一个消费者模块儿来从缓冲区取出并进行消费者相应的处理。该模式的优点在于：
+
+解耦：缓冲区的存在可以让生产者和消费者降低互相之间的依赖性，一个模块儿代码变化，不会直接影响另一个模块儿
+并发：由于缓冲区，生产者和消费者不是直接调用，而是两个独立的并发主体，生产者产生数据之后把它放入缓冲区，就继续生产数据，不依赖消费者的处理速度
+
+```python
+from queue import Queue
+import time, threading
+q = Queue()
+
+
+def product(name):
+    count = 1
+    while True:
+        q.put('气球兵{}'.format(count))
+        print('{}训练气球兵'.format(name, count))
+        count += 1
+        time.sleep(5)
+
+
+def consume(name):
+    while True:
+        print('{}使用了{}'.format(name,q.get()))
+        time.sleep(1)
+        q.task_done()
+
+
+t1 = threading.Thread(target=product, args=('wpp',))
+t2 = threading.Thread(target=consume, args=('ypp',))
+t3 = threading.Thread(target=consume, args=('others',))
+
+t1.start()
+t2.start()
+t3.start()
+```
+
+
 
 ## 线程安全
 

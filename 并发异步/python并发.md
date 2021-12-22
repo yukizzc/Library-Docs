@@ -350,30 +350,81 @@ print('主线程%s,线程名%s'%(threading.current_thread(),threading.current_th
 ```python
 import multiprocessing
 import time
+import numpy as np
+start_time = time.time()
 
-def worker(delay, count):
-    # 每个进程迭代计算count次数
-    for i in range(count):
-        print("进程ID:%s,进程名称:%s，第[%s]次执行"%
-        (multiprocessing.current_process().pid,multiprocessing.current_process().name,i+1)
-        )
-        time.sleep(delay)
-# 定义主函数
-def main():
-    # 创建3个进程
-    for i in range(3):
-        process = multiprocessing.Process(target=worker, args=(1,3), name='process%s'%i)
-        process.start()
 
-if __name__ =='__main__':
-    print('cpu内核数量:%s' % multiprocessing.cpu_count())
-    print("主进程ID:%s,主进程名称:%s"%
-        (
-        multiprocessing.current_process().pid,
-        multiprocessing.current_process().name)
-        )
-    main()
+def multi_process():
+    process_list = []
+    for i in range(6):
+        process = multiprocessing.Process(target=cal, args=(i,), name='process%s' % i)
+        process_list.append(process)
+    for j in process_list:
+        j.start()
+    for k in process_list:
+        k.join()
+
+
+def single_process():
+    for i in range(6):
+        cal(i)
+
+
+def cal(yy):
+    print("进程ID:%s,进程名称:%s" % (multiprocessing.current_process().pid, multiprocessing.current_process().name))
+    x = np.random.random([1000, 20000])
+    y = np.random.random([20000, 1000])
+    x_dot_y = sum(sum(x.dot(y)))
+    print(yy, x_dot_y)
+
+
+if __name__ == '__main__':
+    print("主进程ID:%s,主进程名称:%s" % (multiprocessing.current_process().pid, multiprocessing.current_process().name))
+    # multi_process()
+    single_process()
+    print('一共用时：', time.time() - start_time)
 ```
+
+## 进程池
+
+```python
+from concurrent.futures import ProcessPoolExecutor
+import multiprocessing
+import time
+import numpy as np
+start_time = time.time()
+
+
+def multi_process():
+    process_list = []
+    with ProcessPoolExecutor() as executor:
+        results = executor.map(cal, range(6))
+
+
+
+def single_process():
+    for i in range(6):
+        cal(i)
+
+
+def cal(yy):
+    print("进程ID:%s,进程名称:%s" % (multiprocessing.current_process().pid, multiprocessing.current_process().name))
+    x = np.random.random([1000, 20000])
+    y = np.random.random([20000, 1000])
+    x_dot_y = sum(sum(x.dot(y)))
+    print(yy, x_dot_y)
+
+
+if __name__ == '__main__':
+    print("主进程ID:%s,主进程名称:%s" % (multiprocessing.current_process().pid, multiprocessing.current_process().name))
+    multi_process()
+    #single_process()
+    print('一共用时：', time.time() - start_time)
+
+
+```
+
+
 
 # 协程
 
@@ -400,7 +451,7 @@ asyncio.run(result)
 
 main()是普通运行协程函数，执行的时候会依次执行
 
-main2()通过creat_task创建并发的协程
+main2()通过creat_task函数用来并发运行作为 asyncio任务的多个协程
 
 ```python
 import asyncio

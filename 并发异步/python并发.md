@@ -426,79 +426,102 @@ if __name__ == '__main__':
 
 
 
-# 协程
+# async异步编程
 
-## 定义协程函数
+## 协程意义
+
+在一个线程中如果遇到IO等待，线程不会傻傻等，利用空余时间干其他事情
+
+```python
+import asyncio
+async def fun1():
+    print(1)
+    # 遇到IO等待会切换其他task
+    await asyncio.sleep(2)
+    print(2)
+    
+    
+async def fun2():
+    print(3)
+    await asyncio.sleep(2)
+    print(4)
+
+
+async def main():
+    # 3.7之前版本用这个方式添加事件
+    # tasks = [asyncio.ensure_future(fun1()),asyncio.ensure_future(fun2())]
+    tasks = [asyncio.create_task(fun1()), asyncio.create_task(fun2())]
+    await asyncio.wait(tasks)
+
+if __name__ == '__main__':
+    asyncio.run(main())
+```
+
+## 事件循环
+
+可以理解成一个死循环，去检测执行某些代码
+
+```python
+# 伪代码
+任务列表 = [task1,task2,task3]
+while True:
+    去任务列表中检查所有任务返回"可执行"和"已完成"
+    for 待执行任务 in 可执行:
+        执行任务
+    for 已完成的任务 in 已完成:
+        从任务里欸包中移除已完成任务
+    if 任务列表都已完成，终止循环
+```
+
+
+
+```python
+import asyncio
+# 去生成一个事件循环
+loop = asyncio.get_event_loop()
+# 将任务放进任务列表
+loop.run_until_complete(任务)
+```
+
+## 快速上手
 
 协程函数：定义函数时候async def 函数名
 
 协程对象：协程函数（）返回的对象
 
+注意：执行创建协程对象，函数内部代码不会执行
+
 ```python
-import asyncio
-async def fun():
-    print('jugeng')
-result = fun()
-# 生成一个事件循环，好比while True
-# loop = asyncio.get_event_loop()
-# loop.run_until_complete(result)
-# python 3.7 以后可以用这种方法代替上面得
-# 用asyncio.run来运行协程
+async def func():
+    print('lyy')
+result = func()
+```
+
+要运行函数内部代码，要把协程对象交给事件循环来处理
+
+```python
+async def func():
+    print('lyy')
+result = func()
+loop = asyncio.get_event_loop()
+loop.run_until_complete(result)
+```
+
+python3.7以后版本使用下面方法
+
+```python
+async def func():
+    print('lyy')
+result = func()
 asyncio.run(result)
-```
-
-## 并发运行多个协程
-
-main()是普通运行协程函数，执行的时候会依次执行
-
-main2()通过creat_task函数用来并发运行作为 asyncio任务的多个协程
-
-```python
-import asyncio
-import time
-
-async def say_after(delay, what):
-    print(what+'__'+f"started at {time.strftime('%X')}")
-    await asyncio.sleep(delay)
-    print(what+'__'+f"finished at {time.strftime('%X')}")
-    
-async def main():
-    await say_after(5, 'hello')
-    await say_after(2, 'world')
-
-async def main2():
-    task1 = asyncio.create_task(say_after(5, 'hello'))
-    task2 = asyncio.create_task(say_after(2, 'world'))
-    await task1
-    await task2
-print('第一种')
-asyncio.run(main())
-print('第二种')
-asyncio.run(main2())
-```
-输出的结果如下，可以看到第一种是依次执行hello然后是world。第二种方式hello和world是同时执行了
-```tex
-第一种
-hello__started at 16:08:41
-hello__finished at 16:08:46
-world__started at 16:08:46
-world__finished at 16:08:48
-第二种
-hello__started at 16:08:48
-world__started at 16:08:48
-world__finished at 16:08:50
-hello__finished at 16:08:53
 ```
 
 ## await
 
-await + 可等待得对象（协程对象，future对象，task对象 --> IO等待）
-
-协程遇到await，事件循环将会挂起该协程，执行别的协程，直到其他的协程也挂起或者执行完毕，再进行下一个协程的执行，协程的目的也是让一些耗时的操作异步化。
+await + 可等待的对象（协程对象、Futrue、Task对象）
 
 ```python
 import asyncio
-import time
 async def others(x):
     print(str(x)+'start')
     await asyncio.sleep(5)
@@ -514,42 +537,46 @@ async def func():
 asyncio.run(func())
 ```
 
+await就是等待对象的值得到结果之后再继续向下走，用上这个等待的作用就是希望后面的代码执行要依赖前面结果
+
 ## Task对象
 
-Task对象是指：与任务调度，和并发有关，是指帮助在事件循环中并发的向任务列表，添加多个任务。task用于并发调度协程，通过asyncio.create_task(协程对象)的方式创建Task对象，这样可以让协程加入事件循环中等待被调度执行
+Task用于并发调度协程，通过asyncio.create_task(协程对象)的方式创建Task对象，这样可以让协程加入事件循环中等待被调度执行。除此之外，还可以使用底层级的loop.create_task()或ensure_future()
+
+注意：python3.7以后使用asyncio.create_task这个就行了
 
 ```python
 import asyncio
 import datetime
 async def func(x):
     start_ti = datetime.datetime.today()
-    print(x,start_ti)
+    print(x, start_ti)
     await asyncio.sleep(5)
-    print(x,datetime.datetime.today()-start_ti)
+    print(x, datetime.datetime.today()-start_ti)
     return str(x)+'返回值'
 async def main():
     print('main开始')
-    # 创建task对象，把任务添加到事件循环
-    task1 = asyncio.create_task(func(1),name='guoli')
-    task2 = asyncio.create_task(func(2),name='ft')
+    # 创建事件列表
+    task_list = [asyncio.create_task(func(1), name='lgy'), asyncio.create_task(func(2), name='lyy')]
     print('main结束')
-    res1 = await task1
-    res2 = await task2
-    print(res1)
-    print(res2)
+    # done是一个集合，就是上面任务的返回值,pending没啥用,timeout限制最多堵塞时间，可设置None
+    done, pending = await asyncio.wait(task_list, timeout=10)
+    for i in done:
+        print(i)
+    for i in done:
+        print(i.result(), i.get_name())
 asyncio.run(main())
+
 ```
 
-输出结果，可以看到1和2的任务同时开启了
-
-```txt
 main开始
 main结束
-1 2021-05-12 16:27:20.670393
-2 2021-05-12 16:27:20.670393
-1 0:00:05.012028
-2 0:00:05.012028
-1返回值
-2返回值
-```
+1 2021-12-25 16:29:36.484809
+2 2021-12-25 16:29:36.484809
+1 0:00:05.005165
+2 0:00:05.005165
+<Task finished name='lgy' coro=<func() done, defined at C:/Users/yukizzc/PycharmProjects/百度pyecharts/aa.py:3> result='1返回值'>
+<Task finished name='lyy' coro=<func() done, defined at C:/Users/yukizzc/PycharmProjects/百度pyecharts/aa.py:3> result='2返回值'>
+1返回值 lgy
+2返回值 lyy
 

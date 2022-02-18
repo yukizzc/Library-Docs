@@ -1,0 +1,13 @@
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple numpy
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pandas
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple matplotlib
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple scikit-learn
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pyqt6
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pyqt6-tools
+//tools暂时不支持python310所以要用下面的替代
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple PyQt5Designer
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple mysql-connector
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pymongo
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple beautifulsoup4
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple jupyterlab
+pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pyecharts

@@ -213,9 +213,40 @@ data["age"] = data["age"].map(age_map)
 
 # 聚合groupby
 
-https://baijiahao.baidu.com/s?id=1644900050125304030&wfr=spider&for=pc
+```python
+import pandas as pd
+dic = {'name':['liu','guoli','liu'],
+       'age':[32,33,34],
+       'local':['广东','韶关','韶关'],
+       'height':[160,160,155]}
+df = pd.DataFrame(dic)
+group = df.groupby(by='name')
+group2 = df.groupby(by=['name','local'])
+group.mean(),group2.mean()
+```
+
+|      | name  | age  | local | height |
+| ---- | ----- | ---- | ----- | ------ |
+| 0    | liu   | 32   | 广东  | 160    |
+| 1    | guoli | 33   | 韶关  | 160    |
+| 2    | liu   | 34   | 韶关  | 155    |
+
+|          | age  | height |
+| -------- | ---- | ------ |
+| **name** |      |        |
+| guoli    | 33.0 | 160.0  |
+| liu      | 33.0 | 157.5  |
+
+|       |       | age  | height |
+| ----- | ----- | ---- | ------ |
+| name  | local |      |        |
+| guoli | 韶关  | 33.0 | 160.0  |
+| liu   | 广东  | 32.0 | 160.0  |
+|       | 韶关  | 34.0 | 155.0  |
+
+Groupby简单来讲就是实现数据的快速分组聚合（求和、求均值等计算），比如按照name、local等进行数据的均值（和值）计算等
 
 # 数据合并concat merge
 
-https://www.jianshu.com/p/fe47c70d31f9
+[pandas 的拼接merge和concat函数小结 - 亚北薯条 - 博客园 (cnblogs.com)](https://www.cnblogs.com/laiyaling/p/11798046.html)
 

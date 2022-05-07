@@ -87,7 +87,7 @@ myquery = { "name": "liu" }
 newvalues = { "$set": { "name": "刘" } }
 mycol.update_many(myquery, newvalues)
 
-# 如果有数据就插入，否者进行更新
+# 如果没有数据就插入，否者进行更新
 myquery = {"name": 'liu'}
 mydoc = mycol.find_one(myquery)
 if mydoc == None:
@@ -155,15 +155,18 @@ with open('D:/liu.json','w',encoding='UTF-8') as f:
 ```python
 import pymongo
 import json
+from bson import ObjectId
 myclient = pymongo.MongoClient("mongodb://localhost:27017/")
 mydb = myclient["base"]
 mycol = mydb["table"]
 with open('D:/liu.json', 'r', encoding='UTF-8') as f:
     res = f.read()
     result = json.loads(res)
-    # 因为有一个str类型的_id这里把他删掉，导入数据库后数据库会自动生成
     for i in result:
-        del i['_id']
+        # 把str类型转换成mongodb里的对应类型
+        i['_id'] = ObjectId(i['_id'])
+        # 如果想要重新自动生成id就在在这里把id字段删了
+        # del i['_id']
     mycol.insert_many(result)
 ```
 

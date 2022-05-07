@@ -257,8 +257,8 @@ def consume(name):
         q.task_done()
 
 
-t1 = threading.Thread(target=product, args=('wpp',))
-t2 = threading.Thread(target=consume, args=('ypp',))
+t1 = threading.Thread(target=product, args=('zcc',))
+t2 = threading.Thread(target=consume, args=('lyy',))
 t3 = threading.Thread(target=consume, args=('others',))
 
 t1.start()
@@ -426,157 +426,150 @@ if __name__ == '__main__':
 
 
 
-# async异步编程
+# asyncio异步
 
-## 协程意义
+中文地址：[asyncio --- 异步 I/O — Python 3.10.4 文档](https://docs.python.org/zh-cn/3/library/asyncio.html)
 
-在一个线程中如果遇到IO等待，线程不会傻傻等，利用空余时间干其他事情
+<font color="red">event_loop事件循环</font>：程序开启一个无限的循环，程序员会把一些函数注册到事件循环上。当满足事件发生的时候，调用相应的协程函数。
+<font color="red">coroutine 协程</font>：协程对象，指一个使用async关键字定义的函数，它的调用不会立即执行函数，而是会返回一个协程对象。协程对象需要注册到事件循环，由事件循环调用。
+<font color="red">task 任务</font>：一个协程对象就是一个原生可以挂起的函数，任务则是对协程进一步封装，其中包含任务的各种状态。
+<font color="red">future</font>： 代表将来执行或没有执行的任务的结果。它和task上没有本质的区别
+<font color="red">async/await 关键字</font>：python3.5 用于定义协程的关键字，async定义一个协程，await用于挂起阻塞的异步调用接口。
 
-```python
-import asyncio
-async def fun1():
-    print(1)
-    # 遇到IO等待会切换其他task
-    await asyncio.sleep(2)
-    print(2)
-    
-    
-async def fun2():
-    print(3)
-    await asyncio.sleep(2)
-    print(4)
+## 创建协程
 
+首先定义一个协程，在def前加入async声明，就可以定义一个协程函数。
 
-async def main():
-    # 3.7之前版本用这个方式添加事件
-    # tasks = [asyncio.ensure_future(fun1()),asyncio.ensure_future(fun2())]
-    tasks = [asyncio.create_task(fun1()), asyncio.create_task(fun2())]
-    await asyncio.wait(tasks)
-
-if __name__ == '__main__':
-    asyncio.run(main())
-```
-
-## 事件循环
-
-可以理解成一个死循环，去检测执行某些代码
-
-```python
-# 伪代码
-任务列表 = [task1,task2,task3]
-while True:
-    去任务列表中检查所有任务返回"可执行"和"已完成"
-    for 待执行任务 in 可执行:
-        执行任务
-    for 已完成的任务 in 已完成:
-        从任务里欸包中移除已完成任务
-    if 任务列表都已完成，终止循环
-```
-
-
+一个协程函数不能直接调用运行，只能把协程加入到事件循环loop中。然后使用run_until_complete将协程注册到事件循环，并启动事件循环。
 
 ```python
 import asyncio
-# 去生成一个事件循环
-loop = asyncio.get_event_loop()
-# 将任务放进任务列表
-loop.run_until_complete(任务)
-```
-
-## 快速上手
-
-协程函数：定义函数时候async def 函数名
-
-协程对象：协程函数（）返回的对象
-
-注意：执行创建协程对象，函数内部代码不会执行
-
-```python
 async def func():
     print('lyy')
+# 一个coroutine 协程对象
 result = func()
-```
-
-要运行函数内部代码，要把协程对象交给事件循环来处理
-
-```python
-async def func():
-    print('lyy')
-result = func()
-loop = asyncio.get_event_loop()
+# 一个事件循环对象
+loop = asyncio.new_event_loop()
+asyncio.set_event_loop(loop)
+# 启动事件循环
 loop.run_until_complete(result)
 ```
 
-python3.7以后版本使用下面方法
+python3.7以后使用下面方法
 
 ```python
-async def func():
+import asyncio
+async def main():
     print('lyy')
-result = func()
+result = main()
 asyncio.run(result)
 ```
 
+asyncio提供了三种执行协程的机制
+
+1、使用asyncio.run()执行协程。一般用于执行最顶层的入口函数，如main()
+
+2、await一个协程。一般用于在一个协程中调用另一协程
+
+3、用asyncio.create_task()方法将Coroutine（协程）封装为Task（任务），一般用于实现异步并发操作。 需要注意的是，只有在当前线程存在事件循环的时候才能创建任务（Task）
+
 ## await
 
-await + 可等待的对象（协程对象、Futrue、Task对象）
-
 ```python
+import time
 import asyncio
-async def others(x):
-    print(str(x)+'start')
-    await asyncio.sleep(5)
-    print(str(x)+'end')
-    return str(x)+'的返回值'
-async def func():
-    print('执行协程内部代码')
-    # await等执行结束了，执行后面程序
-    response1 = await others(1)
-    print('IO请求结束，结果为', response1)
-    response2 = await others(2)
-    print('IO请求结束，结果为', response2)
-asyncio.run(func())
+async def say_after(delay,what):
+    await asyncio.sleep(delay)
+    print(what)
+    return 'lyy'
+async def main():
+    print(f"started at {time.strftime('%X')}")
+    # 通过await执行协程，协程函数也可以有返回值
+    a1 = await say_after(1,"hello")
+    print(a1)
+    await say_after(2,"world")
+    print(f"finished at {time.strftime('%X')}")
+asyncio.run(main())
 ```
 
-await就是等待对象的值得到结果之后再继续向下走，用上这个等待的作用就是希望后面的代码执行要依赖前面结果
+如果一个对象能够被用在await表达式中，那么我们称这个对象是可等待对象（awaitable object）
 
-## Task对象
+主要有三类**可等待**对象：
 
-Task用于并发调度协程，通过asyncio.create_task(协程对象)的方式创建Task对象，这样可以让协程加入事件循环中等待被调度执行。除此之外，还可以使用底层级的loop.create_task()或ensure_future()
+- 协程coroutine
+- 任务Task
+- 未来对象Future
 
-注意：python3.7以后使用asyncio.create_task这个就行了
+## Task
+
+```python
+import time
+import asyncio
+async def say_after(delay,what):
+    print(what)
+    await asyncio.sleep(delay)
+    return 'lyy_'+what
+async def main():
+    task1 = asyncio.create_task(say_after(5,"hello"))
+    task2 = asyncio.create_task(say_after(2,"world"))
+    print(f"started at {time.strftime('%X')}")
+    await task1
+    await task2
+    # task的返回值
+    print(task1.result(),task2.result())
+    print(f"finished at {time.strftime('%X')}")
+asyncio.run(main())
+```
+
+Task用来**并发**的调度协程。当一个协程通过类似 asyncio.create_task() 的函数被封装进一个 Task时，这个协程 会很快被自动调度执行
+
+### asyncio.gather
 
 ```python
 import asyncio
-import datetime
-async def func(x):
-    start_ti = datetime.datetime.today()
-    print(x, start_ti)
-    await asyncio.sleep(5)
-    print(x, datetime.datetime.today()-start_ti)
-    return str(x)+'返回值'
+async def func(name, number):
+    print(name+'_start')
+    await asyncio.sleep(number)
+    print(name+'_end')
+    return number
 async def main():
-    print('main开始')
-    # 创建事件列表
-    task_list = [asyncio.create_task(func(1), name='lgy'), asyncio.create_task(func(2), name='lyy')]
-    print('main结束')
-    # done是一个集合，就是上面任务的返回值,pending没啥用,timeout限制最多堵塞时间，可设置None
-    done, pending = await asyncio.wait(task_list, timeout=10)
-    for i in done:
-        print(i)
-    for i in done:
-        print(i.result(), i.get_name())
+    # 并发执行多个task
+    return_list = await asyncio.gather(func("A", 2),func("B", 3),func("C", 7))
+    print(return_list)
 asyncio.run(main())
 
 ```
 
-main开始
-main结束
-1 2021-12-25 16:29:36.484809
-2 2021-12-25 16:29:36.484809
-1 0:00:05.005165
-2 0:00:05.005165
-<Task finished name='lgy' coro=<func() done, defined at C:/Users/yukizzc/PycharmProjects/百度pyecharts/aa.py:3> result='1返回值'>
-<Task finished name='lyy' coro=<func() done, defined at C:/Users/yukizzc/PycharmProjects/百度pyecharts/aa.py:3> result='2返回值'>
-1返回值 lgy
-2返回值 lyy
+### asyncio.wait
 
+```python
+import asyncio
+async def func(name, number):
+    print(name+'_start')
+    await asyncio.sleep(number)
+    print(name+'_end')
+    return number
+async def main():
+    task_list = [asyncio.create_task(func("A", 2), name='lgy'),
+                 asyncio.create_task(func("B", 3), name='lyy'),
+                 asyncio.create_task(func("C", 7), name='lgl')]
+    # done表示已完成的任务，pending表示未完成（超过timeout的任务）
+    done, pending = await asyncio.wait(task_list,timeout=3)
+    for j in pending:
+        print(j)
+    for i in done:
+        print(i)
+        print(i.result(), i.get_name())
+asyncio.run(main())
+```
+
+wait的使用
+在内部wait()使用一个set集合保存它创建的Task实例：
+1.因为set集合是无序的所以这也就是我们的任务不是顺序执行的原因。
+2.wait的返回值是一个元组，包括两个集合，分别表示已完成和未完成的任务。
+
+gather的使用
+gather的作用和wait类似，但不同的是：
+1.gather任务无法取消。
+2.返回值是一个结果列表。
+3.可以按照传入参数的 顺序，顺序输出。

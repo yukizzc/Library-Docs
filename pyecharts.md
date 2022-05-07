@@ -350,7 +350,8 @@ async def index(request):
 
 
 if __name__ == '__main__':
-    app.run()
+    # 是否输出日志
+    app.run(access_log=False)
 ```
 
 解析下，html文件里url: "http://127.0.0.1:8000/barChart"这里的barChart需要对应python代码里@app.route("/barChart", methods=["GET"])第一个参数的

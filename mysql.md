@@ -119,7 +119,7 @@ mycursor = mydb.cursor()
 mycursor.execute("SELECT * FROM jiujiu")
 myresult = mycursor.fetchall()     # fetchall() 获取所有记录，如果获取一条数据用fetchone()数据库第一条
 for x in myresult:
-  print(x)
+    print(x)
 ```
 
 ## 根据条件查询
@@ -137,7 +137,7 @@ sql = " SELECT * FROM jiujiu WHERE name ='桔梗' and age = 33 "
 mycursor.execute(sql)
 myresult = mycursor.fetchall()
 for x in myresult:
-  print(x)
+    print(x)
 ```
 
 查询全部的记录：      select * from jiujiu;
@@ -184,10 +184,10 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 while True:
-  time.sleep(3)
-  mycursor.execute("SELECT * FROM jiujiu order by id DESC limit 1")
-  result = mycursor.fetchone()
-  print(result)
+    time.sleep(3)
+    mycursor.execute("SELECT * FROM jiujiu order by id DESC limit 1")
+    result = mycursor.fetchone()
+    print(result)
 ```
 
 解决方法
@@ -203,12 +203,12 @@ mydb = mysql.connector.connect(
 )
 mycursor = mydb.cursor()
 while True:
-  time.sleep(3)
-  mycursor.execute("SELECT * FROM jiujiu order by id DESC limit 1")
-  result = mycursor.fetchone()
-  # 每次执行完提交事务，也可以不加而在mysql.connector.connect时候添加一个参数:autocommit=1
-  mydb.commit() 
-  print(result)
+    time.sleep(3)
+    mycursor.execute("SELECT * FROM jiujiu order by id DESC limit 1")
+    result = mycursor.fetchone()
+    # 每次执行完提交事务，也可以不加而在mysql.connector.connect时候添加一个参数:autocommit=1
+    mydb.commit() 
+    print(result)
 ```
 
 ## 关闭游标和数据库

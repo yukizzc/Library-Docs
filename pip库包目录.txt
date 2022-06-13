@@ -11,3 +11,5 @@ pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pymongo
 pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple beautifulsoup4
 pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple jupyterlab
 pip3 install -i https://pypi.tuna.tsinghua.edu.cn/simple pyecharts
+//更新库方法
+pip3 install --upgrade -i https://pypi.tuna.tsinghua.edu.cn/simple beautifulsoup4

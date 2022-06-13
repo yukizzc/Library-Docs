@@ -13,7 +13,7 @@ https://www.jb51.net/article/198291.htm
  三、启动服务成功后，敲mysql -u root -p
 如果能进入mysql命令界面就说明成功了。
 
-# SQ命令
+# SQL命令
 
 https://www.runoob.com/mysql/mysql-select-query.html
 
@@ -133,8 +133,9 @@ mydb = mysql.connector.connect(
   database="ft"
 )
 mycursor = mydb.cursor()
-sql = " SELECT * FROM jiujiu WHERE name ='桔梗' and age = 33 "
-mycursor.execute(sql)
+sql = " SELECT * FROM jiujiu WHERE name =%s and age = %d "
+val = ("桔梗",33)
+mycursor.execute(sql,val)
 myresult = mycursor.fetchall()
 for x in myresult:
     print(x)
@@ -161,8 +162,11 @@ mydb = mysql.connector.connect(
   database="ft"
 )
 mycursor = mydb.cursor()
-sql = "UPDATE jiujiu SET name = '刘' WHERE name = '桔梗' and money = 2600"
-mycursor.execute(sql)
+sql = "UPDATE jiujiu SET name = %s WHERE name = %s and money = %d"
+# 更新多个字段用逗号隔开
+# update jiujiu set name =%d,money=%d where name =%s"
+val = ("刘","桔梗",2600)
+mycursor.execute(sql,val)
 mydb.commit()
 print(mycursor.rowcount, " 条记录被修改")
 ```

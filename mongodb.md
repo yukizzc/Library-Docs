@@ -53,6 +53,8 @@ mylist = [
   { "name": "ft", "area": "杭州"}
 ]
 x = mycol.insert_many(mylist)
+# 插入pandas,把df转换成dict，这里records表示过滤df的index列
+mycol.insert_many(df.to_dict('records'))
 ```
 
 ## 查询数据

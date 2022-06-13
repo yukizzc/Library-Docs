@@ -185,10 +185,19 @@ data.drop(['height','weight'],axis=1,inplace=True)
 ```
 
 ```python
+# 改变某列数据类型
+df['date'] = df['date'].astype('str')
 # 把字符串转换成日期格式，日期可以进行排序
 df = pd.DataFrame([['2019-05-30',1],['2020-06-30',2],['2018-06-30',2]],columns=['date','num'])
 df['date_str'] = pd.to_datetime(df['date'])
 df.sort_values(by='date_str')
+```
+
+```python
+# 把seires转换成dataframe
+df_series = pd.Series(np.random.randint(0,100,size=(10)),
+                        index=['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'])
+df = pd.DataFrame(df_series, columns=['A'])
 ```
 
 

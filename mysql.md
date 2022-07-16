@@ -219,7 +219,9 @@ while True:
 
 每次最后命令后commit一下总归没错，最后记得关闭
 
-#关闭游标
+```python
+# 关闭游标
 mycursor.close()
-#关闭数据库链接
+# 关闭数据库链接
 mydb.close()
+```
